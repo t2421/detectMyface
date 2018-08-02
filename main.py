@@ -13,14 +13,13 @@ faceCascade = cv2.CascadeClassifier(cascadePath)
 # recognizer = cv2.face.LBPHFaceRecognizer_create()
 # recognizer = cv2.face.FisherFaceRecognizer_create()
 recognizer = cv2.face.EigenFaceRecognizer_create()
-human_labels = {
-    "Al_Gore":0,
-    "John_Travolta":1,
-    "shun_kiyo":2
-}
+
+# labelをintで管理するため
+human_labels = {}
 
 # 指定されたpath内の画像を取得
 def get_images_and_labels(path):
+    count = 0
     # 画像を格納する配列
     images = []
     # ラベルを格納する配列
@@ -49,7 +48,13 @@ def get_images_and_labels(path):
             images.append(roi)
             # cv2.imwrite("./"+"clip_"+f, roi)
         #     # ファイル名からラベルを取得
-            labels.append(human_labels[get_label(f)])
+
+            # 解析で渡せるラベルはintだけなので、それぞれの人をintに割り当てる
+            use_label = get_label(f)
+            if use_label not in human_labels:
+                human_labels[use_label] = count
+                count = count+1
+            labels.append(human_labels[use_label])
             
         #     # ファイル名を配列に格納
             files.append(f)
