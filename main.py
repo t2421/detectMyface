@@ -15,7 +15,8 @@ faceCascade = cv2.CascadeClassifier(cascadePath)
 recognizer = cv2.face.EigenFaceRecognizer_create()
 human_labels = {
     "Al_Gore":0,
-    "John_Travolta":1
+    "John_Travolta":1,
+    "shun_kiyo":2
 }
 
 # 指定されたpath内の画像を取得
@@ -29,7 +30,7 @@ def get_images_and_labels(path):
     for f in os.listdir(path):
         if "DS_Store" in f:
             continue
-        print(os.path.join(path, f))
+        # print(os.path.join(path, f))
         # 画像のパス
         image_path = os.path.join(path, f)
         # グレースケールで画像を読み込む
@@ -52,7 +53,7 @@ def get_images_and_labels(path):
             
         #     # ファイル名を配列に格納
             files.append(f)
-    print(labels)
+    
     return images, labels, files
 
 def get_label(filename):
@@ -67,13 +68,13 @@ recognizer.train(images, np.array(labels))
 
 # # テスト画像を取得
 test_images, test_labels, test_files = get_images_and_labels(test_path)
-print(test_labels)
+
 i = 0
 while i < len(test_labels):
     # テスト画像に対して予測実施
     
     label, confidence = recognizer.predict(test_images[i])
-    print("predict:{}".format(label))
+    
     # 予測結果をコンソール出力
     print("Test Image: {}, Predicted Label: {}, Confidence: {}".format(test_files[i], label, confidence))
     # テスト画像を表示
