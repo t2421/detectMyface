@@ -4,6 +4,8 @@ from PIL import Image
 
 train_path = './train'
 test_path = './test'
+train_data = "train.yml"
+is_train = os.path.isfile(train_data)
 
 #Haar-like特徴分類器で顔を認識するための準備
 cascadePath = "./haarcascade_frontalface_alt.xml"
@@ -16,9 +18,23 @@ recognizer = cv2.face.EigenFaceRecognizer_create()
 # labelをintで管理するため
 human_labels = {}
 result = {}
+
+def init_labels(path):
+    count = 0
+    for f in os.listdir(path):
+        if "DS_Store" in f:
+            continue
+
+        # 解析で渡せるラベルはintだけなので、それぞれの人をintに割り当てる
+        use_label = get_label(f)
+        if use_label not in human_labels:
+            human_labels[use_label] = count
+            count = count+1
+        
+
 # 指定されたpath内の画像を取得
 def get_images_and_labels(path):
-    count = 0
+    
     # 画像を格納する配列
     images = []
     # ラベルを格納する配列
@@ -28,7 +44,7 @@ def get_images_and_labels(path):
     for f in os.listdir(path):
         if "DS_Store" in f:
             continue
-        # print(os.path.join(path, f))
+
         # 画像のパス
         image_path = os.path.join(path, f)
         # グレースケールで画像を読み込む
@@ -39,20 +55,13 @@ def get_images_and_labels(path):
             return
         # Haar-like特徴分類器で顔を検知
         faces = faceCascade.detectMultiScale(image)
-
+        use_label = get_label(f)
+        labels.append(human_labels[use_label])
         # 検出した顔画像の処理
         for (x, y, w, h) in faces:
             # 検出した顔の部分をクリップして 200x200 サイズにリサイズ
             roi = cv2.resize(image[y: y + h, x: x + w], (200, 200), interpolation=cv2.INTER_LINEAR)
             images.append(roi)
-
-            # 解析で渡せるラベルはintだけなので、それぞれの人をintに割り当てる
-            use_label = get_label(f)
-            if use_label not in human_labels:
-                human_labels[use_label] = count
-                count = count+1
-            labels.append(human_labels[use_label])
-            
             # ファイル名を配列に格納
             files.append(f)
     return images, labels, files
@@ -61,9 +70,15 @@ def get_label(filename):
     filename_arr = filename.split('_')
     return filename_arr[0]+"_"+filename_arr[1]
 
-# # トレーニング画像を取得
-images, labels, files = get_images_and_labels(train_path)
-recognizer.train(images, np.array(labels))
+init_labels(train_path)
+
+if(is_train):
+    recognizer.read(train_data)
+else:
+    images, labels, files = get_images_and_labels(train_path)
+    recognizer.train(images, np.array(labels))
+    recognizer.save(train_data)
+
 
 # # テスト画像を取得
 test_images, test_labels, test_files = get_images_and_labels(test_path)
