@@ -78,30 +78,40 @@ def mkdir(path):
 
 
 def load_json(path):
-    f = open(path,"r")
+    f = open("labels.json","r")
     json_data = json.load(f)
-    print(json_data["shun_kiyo"])
+    return json_data
 
-load_json('labels.json')
+# jsonの読み書き
+if os.path.exists('./labels.json'):
+    tmp_labels = load_json('./labels.json')  
+    human_labels = tmp_labels
+    
 init_labels(train_path)
 fw = open('labels.json','w')
 json.dump(human_labels,fw,indent=4)
+
+
 
 mkdir("./trained")
 if(is_train):
     images, labels, files = get_images_and_labels(train_path)
     recognizer.read(train_data)
-    recognizer.train(images, np.array(labels))
-    recognizer.save(train_data)
+    if images:
+        recognizer.train(images, np.array(labels))
+        recognizer.save(train_data)
         
 else:
     images, labels, files = get_images_and_labels(train_path)
-    recognizer.train(images, np.array(labels))
-    recognizer.save(train_data)
+    if images:
+        recognizer.train(images, np.array(labels))
+        recognizer.save(train_data)
+    else:
+        print("train data is empty")
 
 for filename in files:
     print(filename)
-    #shutil.move("./train/"+filename,"./trained")
+    shutil.move("./train/"+filename,"./trained")
 
 # # テスト画像を取得
 test_images, test_labels, test_files = get_images_and_labels(test_path)
