@@ -6,7 +6,7 @@ train_path = './train'
 test_path = './test'
 train_data = "train.yml"
 is_train = os.path.isfile(train_data)
-
+print(cv2.__version__)
 #Haar-like特徴分類器で顔を認識するための準備
 cascadePath = "./haarcascade_frontalface_alt.xml"
 faceCascade = cv2.CascadeClassifier(cascadePath)
