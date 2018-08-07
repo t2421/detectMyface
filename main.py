@@ -1,12 +1,14 @@
 import cv2, os, json
 import numpy as np
 from PIL import Image
+import shutil
+import json
 
 train_path = './train'
 test_path = './test'
 train_data = "train.yml"
 is_train = os.path.isfile(train_data)
-print(cv2.__version__)
+
 #Haar-like特徴分類器で顔を認識するための準備
 cascadePath = "./haarcascade_frontalface_alt.xml"
 faceCascade = cv2.CascadeClassifier(cascadePath)
@@ -70,15 +72,36 @@ def get_label(filename):
     filename_arr = filename.split('_')
     return filename_arr[0]+"_"+filename_arr[1]
 
-init_labels(train_path)
+def mkdir(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
 
+
+def load_json(path):
+    f = open(path,"r")
+    json_data = json.load(f)
+    print(json_data["shun_kiyo"])
+
+load_json('labels.json')
+init_labels(train_path)
+fw = open('labels.json','w')
+json.dump(human_labels,fw,indent=4)
+
+mkdir("./trained")
 if(is_train):
+    images, labels, files = get_images_and_labels(train_path)
     recognizer.read(train_data)
+    recognizer.train(images, np.array(labels))
+    recognizer.save(train_data)
+        
 else:
     images, labels, files = get_images_and_labels(train_path)
     recognizer.train(images, np.array(labels))
     recognizer.save(train_data)
 
+for filename in files:
+    print(filename)
+    #shutil.move("./train/"+filename,"./trained")
 
 # # テスト画像を取得
 test_images, test_labels, test_files = get_images_and_labels(test_path)
