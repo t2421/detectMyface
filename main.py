@@ -32,7 +32,8 @@ def init_labels(path):
         if use_label not in human_labels:
             human_labels[use_label] = count
             count = count+1
-        
+
+# jsonが既に存在していたらそのjsonの続きから採番をする        
 def get_start_count():
     tmp = 0
     for id in human_labels:
@@ -40,6 +41,7 @@ def get_start_count():
             tmp = int(human_labels[id])
     print(tmp)
     return tmp
+
 # 指定されたpath内の画像を取得
 def get_images_and_labels(path):
     
@@ -65,18 +67,10 @@ def get_images_and_labels(path):
         # Haar-like特徴分類器で顔を検知
         faces = faceCascade.detectMultiScale(image)
         use_label = get_label(f)
-        print(use_label)
+        
         labels.append(human_labels[use_label])
-        
-        tmp_width = 0
-        main_face = []
-        # 検出した顔画像の処理
-        # 2つ以上検出されたときは大きいほうをメインとする
-        for (x1, y1, w1, h1) in faces:
-            if tmp_width < w1:
-                tmp_width = w1
-                main_face = [x1,y1,w1,h1]
-        
+       
+        main_face = get_main_face(faces)
         (x,y,w,h) = (main_face[0],main_face[1],main_face[2],main_face[3])
         
         # 検出した顔の部分をクリップして 200x200 サイズにリサイズ
@@ -86,6 +80,20 @@ def get_images_and_labels(path):
         # ファイル名を配列に格納
         files.append(f)
     return images, labels, files
+
+
+# 画像から主として表示されている顔を抽出する
+def get_main_face(faces):
+    main_face = []
+    tmp_width = 0
+    # 検出した顔画像の処理
+    # 2つ以上検出されたときは大きいほうをメインとする
+    for (x1, y1, w1, h1) in faces:
+        if tmp_width < w1:
+            tmp_width = w1
+            main_face = [x1,y1,w1,h1]
+    return main_face
+
 
 def get_label(filename):
     filename_arr = filename.split('_')
