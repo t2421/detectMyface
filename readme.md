@@ -1,3 +1,6 @@
+## 使用している画像データ
+http://vis-www.cs.umass.edu/lfw/index.html
+
 ## pip modules
 + opencv-contrib-python
 + opencv-python
